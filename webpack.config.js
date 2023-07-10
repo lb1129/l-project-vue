@@ -8,6 +8,8 @@ const TerserPlugin = require('terser-webpack-plugin')
 const CopyPlugin = require("copy-webpack-plugin")
 const webpack = require("webpack")
 const dotenv = require("dotenv")
+const { VueLoaderPlugin } = require('vue-loader')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 const appDirectory = fs.realpathSync(process.cwd())
 const resolveApp = relativePath => path.resolve(appDirectory, relativePath)
@@ -31,6 +33,10 @@ dotenv.config({
   override: true
 })
 
+if (!/\/$/.test(builtInEnvs.PUBLIC_URL)) {
+  builtInEnvs.PUBLIC_URL = `${builtInEnvs.PUBLIC_URL}/`
+}
+
 // PUBLIC_URL
 const PUBLIC_URL = builtInEnvs.PUBLIC_URL
 // PORT
@@ -41,7 +47,7 @@ const BUILD_PATH = builtInEnvs.BUILD_PATH
 const GENERATE_SOURCEMAP = builtInEnvs.GENERATE_SOURCEMAP === 'true'
 
 const prefixRE = /^L_/
-function resolveClientEnv (raw) {
+const resolveClientEnv = (raw) => {
   const env = {}
   Object.keys(builtInEnvs).forEach(key => {
     if (prefixRE.test(key) || key === 'NODE_ENV' || builtInEnvs[key]) {
@@ -74,79 +80,86 @@ module.exports = {
   module: {
     rules: [
       {
-        oneOf: [
+        test: /\.vue$/,
+        loader: 'vue-loader'
+      },
+      {
+        test: /\.tsx?$/,
+        use: [
           {
-            test: /\.ts$/,
-            use: [
-              {
-                loader: 'babel-loader',
-                options: {
-                  presets: [
-                    ['@babel/preset-env', {useBuiltIns: "entry", corejs: '3.0'}]
-                  ]
-                }
-              },
-              'ts-loader'
-            ]
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                ['@babel/preset-env'],
+                '@vue/babel-preset-jsx'
+              ]
+            }
           },
           {
-            // css-loader can auto handle CSS modules
-            test: /\.css$/,
-            use: [
-              isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
-              'css-loader',
-              {
-                loader: 'postcss-loader',
-                options: {
-                  postcssOptions: {
-                    plugins: [
-                      [
-                        'postcss-preset-env',
-                        {
-                          autoprefixer: {
-                            flexbox: 'no-2009',
-                          },
-                          stage: 3,
-                        }
-                      ]
-                    ],
-                  }
-                }
-              }
-            ]
-          },
-          {
-            test: /\.less$/,
-            use: [
-              isProduction ? MiniCssExtractPlugin.loader : 'style-loader', 
-              'css-loader',
-              'postcss-loader',
-              'less-loader'
-            ]
-          },
-          {
-            test: /\.(svg)(\?.*)?$/,
-            type: 'asset/resource'
-          },
-          {
-            test: /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/,
-            type: 'asset',
-            // parser: {
-            //   dataUrlCondition: {
-            //     maxSize: 10000
-            //   },
-            // },
-          },
-          {
-            test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-            type: 'asset'
-          },
-          {
-            test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
-            type: 'asset'
-          },
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              appendTsSuffixTo: [/\.vue$/]
+            }
+          }
         ]
-      }
+      },
+      {
+        // css-loader can auto handle CSS modules
+        test: /\.css$/,
+        use: [
+          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  [
+                    'postcss-preset-env',
+                    {
+                      autoprefixer: {
+                        flexbox: 'no-2009',
+                      },
+                      stage: 3,
+                    }
+                  ]
+                ],
+              }
+            }
+          }
+        ]
+      },
+      {
+        test: /\.less$/,
+        use: [
+          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader', 
+          'css-loader',
+          'postcss-loader',
+          'less-loader'
+        ]
+      },
+      {
+        test: /\.(svg)(\?.*)?$/,
+        type: 'asset/resource'
+      },
+      {
+        test: /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/,
+        type: 'asset',
+        // parser: {
+        //   dataUrlCondition: {
+        //     maxSize: 10000
+        //   },
+        // },
+      },
+      {
+        test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+        type: 'asset'
+      },
+      {
+        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
+        type: 'asset'
+      },
     ]
   },
   performance: IS_ANALYZE ? false : {
@@ -159,7 +172,9 @@ module.exports = {
       '.mjs',
       '.js',
       '.ts',
+      '.tsx',
       '.json',
+      '.vue',
     ],
     alias: {
       '@': resolveApp('src'),
@@ -170,6 +185,8 @@ module.exports = {
     type: 'filesystem'
   },
   plugins: [
+    new ForkTsCheckerWebpackPlugin(),
+    new VueLoaderPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin(resolveClientEnv()),
     new CopyPlugin({
@@ -185,7 +202,18 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: resolveApp('public/index.html'),
-      templateParameters: resolveClientEnv(true)
+      templateParameters: (compilation, assets, assetTags, options) => {
+        return {
+          compilation,
+          webpackConfig: compilation.options,
+          htmlWebpackPlugin: {
+            tags: assetTags,
+            files: assets,
+            options
+          },
+          ...resolveClientEnv(true)
+        }
+      }
     }),
     IS_ANALYZE && isProduction && new BundleAnalyzerPlugin({
       generateStatsFile: true
@@ -206,6 +234,7 @@ module.exports = {
     open: true,
     static: {
       directory: resolveApp('public'),
+      publicPath: PUBLIC_URL,
       watch: true
     },
     compress: true,
@@ -216,6 +245,27 @@ module.exports = {
         errors: true,
         warnings: false
       }
+    },
+    historyApiFallback: {
+      disableDotRule: true,
+      index: PUBLIC_URL
+    },
+    setupMiddlewares(middlewares, devServer) {
+      // Redirect to `PUBLIC_URL` if url not match
+      devServer.app.use((req, res, next) => {
+        const servedPath = PUBLIC_URL.slice(0, -1);
+        if (
+          servedPath === '' ||
+          req.url === servedPath ||
+          req.url.startsWith(servedPath)
+        ) {
+          next();
+        } else {
+          const newPath = path.posix.join(servedPath, req.path !== '/' ? req.path : '');
+          res.redirect(newPath);
+        }
+      })
+      return middlewares
     }
   }
 }
