@@ -90,7 +90,14 @@ module.exports = {
             loader: 'babel-loader',
             options: {
               presets: [
-                ['@babel/preset-env'],
+                [
+                  '@babel/preset-env',
+                  {
+                    // NOTE usage 对于 node_modules 内的模块不起作用
+                    useBuiltIns: "entry",
+                    corejs: '3.0'
+                  }
+                ],
                 '@vue/babel-preset-jsx'
               ]
             }
@@ -225,7 +232,9 @@ module.exports = {
   optimization: {
     minimize: isProduction,
     minimizer: [
-      new TerserPlugin(),
+      new TerserPlugin({
+        extractComments: false
+      }),
       new CssMinimizerPlugin(),
     ]
   },
