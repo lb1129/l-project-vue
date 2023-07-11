@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack server",
     "build": "cross-env NODE_ENV=production webpack",
-    "test": "jest --watchAll",
+    "test": "cross-env NODE_ENV=test jest --watchAll",
     "analyze": "cross-env IS_ANALYZE=true npm run build",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "lint:style": "stylelint \"**/*.{css,less,vue}\" --fix --ignore-path .gitignore",
