@@ -16,6 +16,7 @@
   "author": "Viho Lei",
   "license": "MIT",
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.22.7",
     "@babel/preset-env": "^7.22.7",
     "@babel/preset-typescript": "^7.22.5",
     "@commitlint/cli": "^17.6.6",
@@ -88,5 +89,9 @@
     "*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": "eslint --fix",
     "*.{css,less,vue}": "stylelint --fix",
     "*.{md,json}": "prettier --write"
-  }
+  },
+  "corrected-package": [
+    "echarts",
+    "zrender"
+  ]
 }
