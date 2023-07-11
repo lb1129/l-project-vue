@@ -40,18 +40,17 @@ type EChartsOption = echarts.ComposeOption<
 >
 
 export default Vue.extend({
-  name: 'Chart',
+  name: 'ChartDemo',
   props: {
     msg: String
   },
   mounted() {
     const myChart = echarts.init(this.$refs.chartDom as HTMLDivElement)
-    let option: EChartsOption
 
     const dataCount = 5e5
     const data = generateData(dataCount)
 
-    option = {
+    const option: EChartsOption = {
       title: {
         text: echarts.format.addCommas(dataCount) + ' Data',
         left: 10
