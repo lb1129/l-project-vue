@@ -3,22 +3,23 @@ const fs = require('fs')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
-const CopyPlugin = require("copy-webpack-plugin")
-const webpack = require("webpack")
-const dotenv = require("dotenv")
+const CopyPlugin = require('copy-webpack-plugin')
+const webpack = require('webpack')
+const dotenv = require('dotenv')
 const { VueLoaderPlugin } = require('vue-loader')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const ESLintPlugin = require('eslint-webpack-plugin')
 
 const appDirectory = fs.realpathSync(process.cwd())
-const resolveApp = relativePath => path.resolve(appDirectory, relativePath)
+const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath)
 
 const NODE_ENV = process.env.NODE_ENV
 const isProduction = NODE_ENV === 'production'
 const IS_ANALYZE = process.env.IS_ANALYZE === 'true'
 // 内置环境变量 外部自定义环境变量也扩展到该对象 剥离对process.env的污染
-const builtInEnvs= {
+const builtInEnvs = {
   PUBLIC_URL: '/',
   PORT: '9000',
   BUILD_PATH: 'dist',
@@ -27,9 +28,9 @@ const builtInEnvs= {
 
 // 加载自定义环境变量
 dotenv.config({ path: resolveApp('.env'), processEnv: builtInEnvs, override: true })
-dotenv.config({ 
-  path: resolveApp(`.env${NODE_ENV ? `.${NODE_ENV}` : ''}`), 
-  processEnv: builtInEnvs, 
+dotenv.config({
+  path: resolveApp(`.env${NODE_ENV ? `.${NODE_ENV}` : ''}`),
+  processEnv: builtInEnvs,
   override: true
 })
 
@@ -49,7 +50,7 @@ const GENERATE_SOURCEMAP = builtInEnvs.GENERATE_SOURCEMAP === 'true'
 const prefixRE = /^L_/
 const resolveClientEnv = (raw) => {
   const env = {}
-  Object.keys(builtInEnvs).forEach(key => {
+  Object.keys(builtInEnvs).forEach((key) => {
     if (prefixRE.test(key) || key === 'NODE_ENV' || builtInEnvs[key]) {
       env[key] = builtInEnvs[key]
     }
@@ -76,7 +77,11 @@ module.exports = {
     clean: true
   },
   mode: process.env.NODE_ENV,
-  devtool: GENERATE_SOURCEMAP ? 'source-map' : isProduction ? false : 'eval-cheap-module-source-map',
+  devtool: GENERATE_SOURCEMAP
+    ? 'source-map'
+    : isProduction
+    ? false
+    : 'eval-cheap-module-source-map',
   module: {
     rules: [
       {
@@ -94,7 +99,7 @@ module.exports = {
                   '@babel/preset-env',
                   {
                     // NOTE usage 对于 node_modules 内的模块不起作用
-                    useBuiltIns: "entry",
+                    useBuiltIns: 'entry',
                     corejs: '3.0'
                   }
                 ],
@@ -126,12 +131,12 @@ module.exports = {
                     'postcss-preset-env',
                     {
                       autoprefixer: {
-                        flexbox: 'no-2009',
+                        flexbox: 'no-2009'
                       },
-                      stage: 3,
+                      stage: 3
                     }
                   ]
-                ],
+                ]
               }
             }
           }
@@ -140,7 +145,7 @@ module.exports = {
       {
         test: /\.less$/,
         use: [
-          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader', 
+          isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
           'css-loader',
           'postcss-loader',
           'less-loader'
@@ -152,7 +157,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/,
-        type: 'asset',
+        type: 'asset'
         // parser: {
         //   dataUrlCondition: {
         //     maxSize: 10000
@@ -166,23 +171,18 @@ module.exports = {
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
         type: 'asset'
-      },
+      }
     ]
   },
-  performance: IS_ANALYZE ? false : {
-    // warn 500K
-    maxAssetSize: 500000,
-    maxEntrypointSize: 500000
-  },
+  performance: IS_ANALYZE
+    ? false
+    : {
+        // warn 500K
+        maxAssetSize: 500000,
+        maxEntrypointSize: 500000
+      },
   resolve: {
-    extensions: [
-      '.mjs',
-      '.js',
-      '.ts',
-      '.tsx',
-      '.json',
-      '.vue',
-    ],
+    extensions: ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.mts', '.json', '.vue'],
     alias: {
       '@': resolveApp('src'),
       '~': resolveApp('node_modules')
@@ -192,17 +192,20 @@ module.exports = {
     type: 'filesystem'
   },
   plugins: [
+    new ESLintPlugin({
+      extensions: ['js', 'jsx', 'vue', 'ts', 'tsx']
+    }),
     new ForkTsCheckerWebpackPlugin(),
     new VueLoaderPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin(resolveClientEnv()),
     new CopyPlugin({
       patterns: [
-        { 
-          from: "public",
+        {
+          from: 'public',
           globOptions: {
             gitignore: true,
-            ignore: ["**/index.html"],
+            ignore: ['**/index.html']
           }
         }
       ]
@@ -222,12 +225,15 @@ module.exports = {
         }
       }
     }),
-    IS_ANALYZE && isProduction && new BundleAnalyzerPlugin({
-      generateStatsFile: true
-    }),
-    isProduction && new MiniCssExtractPlugin({
-      filename: 'static/css/[name].[contenthash:8].css'
-    })
+    IS_ANALYZE &&
+      isProduction &&
+      new BundleAnalyzerPlugin({
+        generateStatsFile: true
+      }),
+    isProduction &&
+      new MiniCssExtractPlugin({
+        filename: 'static/css/[name].[contenthash:8].css'
+      })
   ].filter(Boolean),
   optimization: {
     minimize: isProduction,
@@ -235,7 +241,7 @@ module.exports = {
       new TerserPlugin({
         extractComments: false
       }),
-      new CssMinimizerPlugin(),
+      new CssMinimizerPlugin()
     ]
   },
   stats: 'errors-warnings',
@@ -262,16 +268,12 @@ module.exports = {
     setupMiddlewares(middlewares, devServer) {
       // Redirect to `PUBLIC_URL` if url not match
       devServer.app.use((req, res, next) => {
-        const servedPath = PUBLIC_URL.slice(0, -1);
-        if (
-          servedPath === '' ||
-          req.url === servedPath ||
-          req.url.startsWith(servedPath)
-        ) {
-          next();
+        const servedPath = PUBLIC_URL.slice(0, -1)
+        if (servedPath === '' || req.url === servedPath || req.url.startsWith(servedPath)) {
+          next()
         } else {
-          const newPath = path.posix.join(servedPath, req.path !== '/' ? req.path : '');
-          res.redirect(newPath);
+          const newPath = path.posix.join(servedPath, req.path !== '/' ? req.path : '')
+          res.redirect(newPath)
         }
       })
       return middlewares
