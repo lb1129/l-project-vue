@@ -17,5 +17,5 @@ export default Vue.extend({
     HelloWorld,
     HelloTsx
   }
-});
+})
 </script>

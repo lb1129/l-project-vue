@@ -12,6 +12,6 @@ export default Vue.extend({
     }
   },
   render() {
-    return (<div onClick={this.clickHandler}>{ this.message }</div>)
+    return <div onClick={this.clickHandler}>{this.message}</div>
   }
 })
