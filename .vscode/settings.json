@@ -1,0 +1,48 @@
+{
+  "files.eol": "\n",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "todo-tree.filtering.excludeGlobs": ["**/node_modules", "**/dist"],
+  "todo-tree.general.tags": ["BUG", "FIXME", "TODO", "HACK", "XXX", "TAG", "DONE", "NOTE", "INFO"],
+  "todo-tree.highlights.customHighlight": {
+    "BUG": {
+      "icon": "bug",
+      "foreground": "#F56C6C"
+    },
+    "FIXME": {
+      "icon": "flame",
+      "foreground": "#FF9800"
+    },
+    "TODO": {
+      "icon": "checklist",
+      "foreground": "#FFEB38"
+    },
+    "HACK": {
+      "icon": "versions",
+      "foreground": "#E040FB"
+    },
+    "XXX": {
+      "icon": "unverified",
+      "foreground": "#E91E63"
+    },
+    "TAG": {
+      "icon": "tag",
+      "foreground": "#409EFF"
+    },
+    "DONE": {
+      "icon": "verified",
+      "foreground": "#0dff00"
+    },
+    "NOTE": {
+      "icon": "note",
+      "foreground": "#67C23A"
+    },
+    "INFO": {
+      "icon": "info",
+      "foreground": "#909399"
+    }
+  }
+}
