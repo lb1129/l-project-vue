@@ -83,6 +83,7 @@ module.exports = ({ PUBLIC_URL, BUILD_PATH, GENERATE_SOURCEMAP, resolveClientEnv
       rules: [
         {
           test: /\.vue$/,
+          include: [resolveApp('src')],
           use: ['thread-loader', 'vue-loader']
         },
         {
