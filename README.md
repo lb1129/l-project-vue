@@ -37,7 +37,7 @@
 
 ## 浏览器兼容处理
 
-- 配置目标浏览器 `package.json` `browserslist.product`
+- 配置目标浏览器 `.browserslistrc` `[production]`
 - 需修正的依赖包 `package.json` `corrected-package`
 
 Tip: 如果第三方依赖包使用的语法不能转换或者 api 不能在目标浏览器 polyfill，则修正无效，可选择切换实现或者抛弃目标浏览器支持
