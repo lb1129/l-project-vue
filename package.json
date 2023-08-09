@@ -74,17 +74,6 @@
     "vue-router": "^3.6.5",
     "vuex": "^3.6.2"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "lint-staged": {
     "*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": "eslint --fix",
     "*.{css,less,vue}": "stylelint --fix",
